@@ -29,6 +29,7 @@ jobs:
       - name: Check syntax and import
         run: |
           python -m py_compile monitor.py
+          python -m unittest discover -s tests -v
           python -c "import monitor; assert monitor.product_url('/products/example?variant=123', 'https://mokosh.pl') == 'https://mokosh.pl/products/example'"
       - name: Build Windows EXE
         run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name MokoshMonitor monitor.py
