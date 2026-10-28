@@ -10,7 +10,9 @@ Lokalny program dla Windows monitorujący pojawianie się nowych produktów w sk
 4. W aplikacji wybierz **Sprawdź teraz**. Pierwsze pobranie ustanawia bazę bez alarmów.
 5. **Start** włącza cykl kontroli co 5 minut, **Stop** zatrzymuje go. Test alertu nie zmienia bazy.
 
-**Tryb demo:** kliknij **Symuluj nowy produkt**, aby dodać fikcyjną pozycję do tabeli i dziennika. Symulacja działa bez połączenia ze sklepem i nie zapisuje produktu w SQLite. **Test alertu** pokazuje wpis testowy w dzienniku oraz opcjonalnie wysyła test na Telegram.\n\nAplikacja działa tylko przy włączonym komputerze i otwartym oknie. Realny monitoring wymaga dostępu do Internetu.
+**Tryb demo:** kliknij **Symuluj nowy produkt**, aby dodać fikcyjną pozycję do tabeli i dziennika. Symulacja działa bez połączenia ze sklepem i nie zapisuje produktu w SQLite. **Test alertu** pokazuje wpis testowy w dzienniku oraz opcjonalnie wysyła test na Telegram.
+
+Aplikacja działa tylko przy włączonym komputerze i otwartym oknie. Realny monitoring wymaga dostępu do Internetu.
 
 ## Powiadomienia
 
