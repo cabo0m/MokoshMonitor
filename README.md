@@ -5,12 +5,12 @@ Lokalny program dla Windows monitorujący pojawianie się nowych produktów w sk
 ## Uruchomienie
 
 1. Zainstaluj Python 3.10+ (wraz z Python Launcher `py`).
-2. Pobierz repozytorium (Code → Download ZIP) i rozpakuj.
-3. Uruchom `start.bat`, który instaluje zależności i kopiuje przykładową konfigurację.
+2. Uruchom `git clone https://github.com/cabo0m/MokoshMonitor.git` i wejdź do katalogu `MokoshMonitor`.
+3. Uruchom `start.bat`, który sam tworzy `.venv`, instaluje zależności i tworzy lokalną konfigurację.
 4. W aplikacji wybierz **Sprawdź teraz**. Pierwsze pobranie ustanawia bazę bez alarmów.
 5. **Start** włącza cykl kontroli co 5 minut, **Stop** zatrzymuje go. Test alertu nie zmienia bazy.
 
-Aplikacja działa tylko przy włączonym komputerze, otwartym oknie i dostępie do Internetu.
+**Tryb demo:** kliknij **Symuluj nowy produkt**, aby dodać fikcyjną pozycję do tabeli i dziennika. Symulacja działa bez połączenia ze sklepem i nie zapisuje produktu w SQLite. **Test alertu** pokazuje wpis testowy w dzienniku oraz opcjonalnie wysyła test na Telegram.\n\nAplikacja działa tylko przy włączonym komputerze i otwartym oknie. Realny monitoring wymaga dostępu do Internetu.
 
 ## Powiadomienia
 
