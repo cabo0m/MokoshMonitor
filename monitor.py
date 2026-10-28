@@ -166,7 +166,8 @@ class App:
         controls.pack(fill="x")
         for name, callback in [("Start", self.start), ("Stop", self.stop),
                                ("Sprawdź teraz", lambda: self.launch(True)),
-                               ("Test alertu", self.test_alert)]:
+                               ("Test alertu", self.test_alert),
+                               ("Symuluj nowy produkt", self.simulate_product)]:
             ttk.Button(controls, text=name, command=callback).pack(side="left", padx=4)
         ttk.Label(root, text="Produkty (dwuklik otwiera sklep)", padding=8).pack(anchor="w")
         self.table = ttk.Treeview(root, columns=("date", "name", "url"), show="headings")
@@ -238,6 +239,16 @@ class App:
     def stop(self):
         self.stop_event.set()
         self.status.set("Zatrzymywanie...")
+
+    def simulate_product(self):
+        """Offline demo: show a fictional new product without modifying SQLite."""
+        stamp = datetime.now().isoformat(timespec="seconds")
+        name = "[DEMO] Nowy kosmetyk testowy"
+        url = "https://mokosh.pl/collections/all"
+        self.table.insert("", 0, values=(stamp, name, url))
+        self.log("SYMULACJA: wykryto nowy produkt: " + name)
+        self.log("SYMULACJA: link: " + url + " (przykładowy, bez prawdziwego produktu)")
+        self.status.set("Symulacja zakończona")
 
     def test_alert(self):
         self.log("TEST: produkt testowy (nie jest zapisywany w bazie)")
