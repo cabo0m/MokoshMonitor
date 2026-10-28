@@ -2,6 +2,9 @@ import json
 import queue
 import sqlite3
 import sys
+import time
+from email.utils import parsedate_to_datetime
+from datetime import timezone
 import threading
 import webbrowser
 from datetime import datetime
@@ -16,7 +19,7 @@ from tkinter import ttk
 ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
 DB = ROOT / "monitor.db"
 CONFIG = ROOT / "config.json"
-DEFAULTS = {"store_url": "https://mokosh.pl", "interval_seconds": 300,
+DEFAULTS = {"store_url": "https://mokosh.pl", "interval_seconds": 900,
             "telegram_bot_token": "", "telegram_chat_id": ""}
 
 
@@ -37,11 +40,37 @@ def product_url(link, base):
     return urlunparse((p.scheme, p.netloc, path, "", "", ""))
 
 
+class RateLimited(Exception):
+    def __init__(self, seconds):
+        self.seconds = seconds
+        super().__init__(f"HTTP 429: sklep ogranicza ruch; kolejna próba najwcześniej za {seconds} s")
+
+
+def retry_delay(response):
+    raw = response.headers.get("Retry-After", "").strip()
+    try:
+        return min(86400, max(60, int(raw)))
+    except ValueError:
+        try:
+            date = parsedate_to_datetime(raw)
+            if date.tzinfo is None:
+                date = date.replace(tzinfo=timezone.utc)
+            return min(86400, max(60, int((date - datetime.now(timezone.utc)).total_seconds())))
+        except (ValueError, TypeError, OverflowError):
+            return 900
+
+
+def ensure_not_limited(response):
+    if response.status_code == 429:
+        raise RateLimited(retry_delay(response))
+
+
 def json_catalog(session, base):
     found = {}
     for page in range(1, 51):
         response = session.get(base + "/products.json",
                                params={"limit": 250, "page": page}, timeout=20)
+        ensure_not_limited(response)
         if response.status_code in (401, 403, 404):
             return None
         response.raise_for_status()
@@ -67,6 +96,7 @@ def html_catalog(session, base):
     for page in range(1, 51):
         response = session.get(base + "/collections/all",
                                params={"page": page}, timeout=20)
+        ensure_not_limited(response)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
         main = soup.select_one("main") or soup.select_one("#MainContent")
@@ -156,6 +186,7 @@ class App:
         self.events = queue.Queue()
         self.stop_event = threading.Event()
         self.worker = None
+        self.cooldown_until = 0.0
         root.title("Mokosh Monitor | MorenaTech")
         root.geometry("900x550")
         title = ttk.Frame(root, padding=12)
@@ -201,6 +232,10 @@ class App:
 
     def check(self):
         try:
+            remaining = int(self.cooldown_until - time.time())
+            if remaining > 0:
+                self.events.put(("log", f"Pomijam kontrolę: limit 429, pozostało {remaining} s"))
+                return
             catalog = fetch_catalog(self.config)
             with connect_db() as conn:
                 added, first = save_catalog(conn, catalog)
@@ -210,6 +245,13 @@ class App:
                     telegram(self.config, name, url)
                 except requests.RequestException as error:
                     self.events.put(("log", "Telegram: " + str(error)))
+        except RateLimited as error:
+            self.cooldown_until = time.time() + error.seconds
+            self.events.put(("error", str(error)))
+            with connect_db() as conn:
+                conn.execute("INSERT INTO checks(checked_at,status,error) VALUES (?,?,?)",
+                             (datetime.now().isoformat(timespec="seconds"), "RATE_LIMIT", str(error)))
+                conn.commit()
         except Exception as error:
             with connect_db() as conn:
                 conn.execute("INSERT INTO checks(checked_at,status,error) VALUES (?,?,?)",
@@ -220,7 +262,8 @@ class App:
     def loop(self, once):
         while not self.stop_event.is_set():
             self.check()
-            if once or self.stop_event.wait(max(30, int(self.config["interval_seconds"]))):
+            pause = max(60, int(self.config["interval_seconds"]), int(self.cooldown_until - time.time()) + 1)
+            if once or self.stop_event.wait(pause):
                 break
         self.events.put(("finished", None))
 
