@@ -27,3 +27,11 @@ Publiczny endpoint `/products.json` (gdy jest dostępny), w przeciwnym razie str
 To prototyp. Nie potwierdzono jeszcze integracji na żywo z mokosh.pl. Zmiany struktury strony, zabezpieczenia antybotowe lub niepełna paginacja mogą zakłócać pracę. Monitor wykrywa nowe produkty, nie powrót na stan magazynowy ani zmiany cen. Alerty Telegram nie mają trwałej kolejki ponowień.
 
 Przygotowane przez [MorenaTech.work](https://morenatech.work).
+
+## Gotowa aplikacja Windows (.exe)
+
+W zakładce [Releases](https://github.com/cabo0m/MokoshMonitor/releases) znajdziesz (po pomyślnym zbudowaniu wydania) `MokoshMonitor.exe` oraz `MokoshMonitor-Windows.zip`. Pobierz ZIP, rozpakuj i uruchom EXE. Python nie jest wymagany. Baza i konfiguracja tworzą się lokalnie obok programu.
+
+### Tworzenie wydania
+
+Wejdź w **Actions → Build Windows demo and Release → Run workflow**, zostaw tag `v0.1.0-demo` i uruchom. Workflow buduje EXE na Windows, sprawdza podstawową składnię/import, tworzy ZIP i publikuje *prerelease*. Działa też przy wypchnięciu taga `v*`. Budowanie i status publikacji zweryfikuj w zakładce Actions. Testy live integracji ze sklepem i ręczny smoke test aplikacji pozostają do wykonania.
