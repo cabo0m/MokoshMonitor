@@ -1,6 +1,7 @@
 import json
 import queue
 import sqlite3
+import sys
 import threading
 import webbrowser
 from datetime import datetime
@@ -12,7 +13,7 @@ from bs4 import BeautifulSoup
 import tkinter as tk
 from tkinter import ttk
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
 DB = ROOT / "monitor.db"
 CONFIG = ROOT / "config.json"
 DEFAULTS = {"store_url": "https://mokosh.pl", "interval_seconds": 300,
